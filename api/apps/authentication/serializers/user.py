@@ -6,7 +6,7 @@ class JWTSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
 
-        if self.user.is_confirmed:
+        if not self.user.is_confirmed:
             raise serializers.ValidationError(
                 {
                     "message": "User is not confirmed yet. Please check your email."
