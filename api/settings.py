@@ -171,7 +171,7 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-TEST_RUNNER = 'wsaude.test_runner.FastTestRunner'
+TEST_RUNNER = 'api.test_runner.FastTestRunner'
 
 REDIS_PROTOCOL = config('REDIS_PROTOCOL')
 REDIS_HOST = config('REDIS_HOST')
