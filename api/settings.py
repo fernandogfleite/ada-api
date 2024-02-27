@@ -51,6 +51,8 @@ CORS_ALLOW_HEADERS = (
 # Application definition
 
 INSTALLED_APPS = [
+    'api.apps.authentication.apps.AuthenticationConfig',
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -62,8 +64,6 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_rest_passwordreset',
     'rest_framework_simplejwt.token_blacklist',
-
-    'api.apps.authentication.apps.AuthenticationConfig',
 ]
 
 MIDDLEWARE = [
@@ -198,3 +198,5 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
 }
+
+AUTH_USER_MODEL = 'authentication.User'
