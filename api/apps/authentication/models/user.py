@@ -32,6 +32,7 @@ class UserManager(BaseUserManager):
         user = self.create_user(email, password)
         user.is_superuser = True
         user.is_staff = True
+        user.is_confirmed = True
         user.save()
 
         return user
@@ -41,6 +42,7 @@ class User(Base, AbstractBaseUser, PermissionsMixin):
     username = None
     email = models.EmailField(unique=True)
     name = models.CharField(max_length=255, blank=True)
+    is_confirmed = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 
@@ -56,6 +58,18 @@ class User(Base, AbstractBaseUser, PermissionsMixin):
         ordering = ['created_at']
         verbose_name = 'user'
         verbose_name_plural = 'users'
+
+    @property
+    def is_student(self):
+        return Student.objects.filter(user=self).exists()
+
+    @property
+    def is_teacher(self):
+        return Teacher.objects.filter(user=self).exists()
+
+    @property
+    def is_secretary(self):
+        return Secretary.objects.filter(user=self).exists()
 
 
 class Student(Base):
