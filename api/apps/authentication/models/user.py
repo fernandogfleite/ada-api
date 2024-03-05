@@ -5,6 +5,8 @@ from django.contrib.auth.models import (
 )
 from django.db import models
 
+import uuid
+
 
 class Base(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
@@ -36,6 +38,66 @@ class UserManager(BaseUserManager):
         user.save()
 
         return user
+
+
+class StudentManager(models.Manager):
+    def create_student(self, email, name, password, student_id):
+        user = User.objects.create_user(email, password)
+        user.name = name
+        user.is_confirmed = False
+        user.save()
+
+        student = self.model(user=user, student_id=student_id)
+        student.save()
+
+        UserConfirmation.objects.create(user=user, token=str(uuid.uuid4()))
+
+        return student
+
+
+class TeacherManager(models.Manager):
+    def create_teacher(self, email, name, password, teacher_id):
+        user = User.objects.create_user(email, password)
+        user.name = name
+        user.is_confirmed = False
+        user.save()
+
+        teacher = self.model(user=user, teacher_id=teacher_id)
+        teacher.save()
+
+        UserConfirmation.objects.create(user=user, token=str(uuid.uuid4()))
+
+        return teacher
+
+
+class TeacherManager(models.Manager):
+    def create_teacher(self, email, name, password, teacher_id):
+        user = User.objects.create_user(email, password)
+        user.name = name
+        user.is_confirmed = False
+        user.save()
+
+        teacher = self.model(user=user, teacher_id=teacher_id)
+        teacher.save()
+
+        UserConfirmation.objects.create(user=user, token=str(uuid.uuid4()))
+
+        return teacher
+
+
+class SecreataryManager(models.Manager):
+    def create_secretary(self, email, name, password, secretary_id):
+        user = User.objects.create_user(email, password)
+        user.name = name
+        user.is_confirmed = False
+        user.save()
+
+        secretary = self.model(user=user, secretary_id=secretary_id)
+        secretary.save()
+
+        UserConfirmation.objects.create(user=user, token=str(uuid.uuid4()))
+
+        return secretary
 
 
 class User(Base, AbstractBaseUser, PermissionsMixin):
@@ -77,6 +139,8 @@ class Student(Base):
         User, on_delete=models.CASCADE, primary_key=True)
     student_id = models.CharField(max_length=255, unique=True)
 
+    objects = StudentManager()
+
     def __str__(self):
         return self.student_id
 
@@ -93,6 +157,8 @@ class Teacher(Base):
     teacher_id = models.CharField(
         max_length=255, unique=True, blank=True, null=True)
 
+    objects = TeacherManager()
+
     def __str__(self):
         return self.teacher_id
 
@@ -108,6 +174,8 @@ class Secretary(Base):
         User, on_delete=models.CASCADE, primary_key=True)
     secretary_id = models.CharField(
         max_length=255, unique=True, blank=True, null=True)
+
+    objects = SecreataryManager()
 
     def __str__(self):
         return self.secretary_id

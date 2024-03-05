@@ -35,4 +35,19 @@ urlpatterns = [
         reset_password_confirm,
         name="reset_password_confirm"
     ),
+    path(
+        'student/register/',
+        user.StudentRegisterViewSet.as_view({'post': 'create'}),
+        name='register_student'
+    ),
+    path(
+        'teacher/register/',
+        user.TeacherRegisterViewSet.as_view({'post': 'create'}),
+        name='register_teacher'
+    ),
+    path(
+        'secretary/register/',
+        user.SecretaryRegisterViewSet.as_view({'post': 'create'}),
+        name='register_secretary'
+    ),
 ]
