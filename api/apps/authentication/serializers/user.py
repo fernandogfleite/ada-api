@@ -28,7 +28,7 @@ class JWTSerializer(TokenObtainPairSerializer):
         return data
 
 
-class CreateStudentSerializer(serializers.ModelSerializer):
+class CreateStudentSerializer(serializers.Serializer):
     name = serializers.CharField(write_only=True)
     email = email = serializers.EmailField(
         required=True,
@@ -51,7 +51,7 @@ class CreateStudentSerializer(serializers.ModelSerializer):
         )
 
 
-class CreateTeacherSerializer(serializers.ModelSerializer):
+class CreateTeacherSerializer(serializers.Serializer):
     name = serializers.CharField(write_only=True)
     email = email = serializers.EmailField(
         required=True,
@@ -74,7 +74,7 @@ class CreateTeacherSerializer(serializers.ModelSerializer):
         )
 
 
-class CreateSecretarySerializer(serializers.ModelSerializer):
+class CreateSecretarySerializer(serializers.Serializer):
     name = serializers.CharField(write_only=True)
     email = email = serializers.EmailField(
         required=True,
