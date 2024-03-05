@@ -9,6 +9,9 @@ from rest_framework.views import APIView
 from rest_framework.exceptions import ValidationError
 
 from api.apps.authentication.models.user import (
+    Secretary,
+    Student,
+    Teacher,
     User,
     UserConfirmation
 )
@@ -16,7 +19,10 @@ from api.apps.authentication.permissions import IsSecretary
 from api.apps.authentication.serializers.user import (
     CreateSecretarySerializer,
     CreateStudentSerializer,
-    CreateTeacherSerializer
+    CreateTeacherSerializer,
+    SecretarySerializer,
+    StudentSerializer,
+    TeacherSerializer
 )
 from api.apps.authentication.signals import send_email_confirmation
 
@@ -134,3 +140,27 @@ class UserResendConfirmView(APIView):
             },
             status=status.HTTP_200_OK
         )
+
+
+class UserDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = None
+    model = None
+
+    def get(self, request, format=None):
+        if request.user.is_student:
+            self.serializer_class = StudentSerializer
+            self.model = Student
+
+        elif request.user.is_teacher:
+            self.serializer_class = TeacherSerializer
+            self.model = Teacher
+
+        elif request.user.is_secretary:
+            self.serializer_class = SecretarySerializer
+            self.model = Secretary
+
+        instance = self.model.objects.get(user=request.user)
+        serializer = self.serializer_class(instance)
+
+        return Response(serializer.data)

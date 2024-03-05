@@ -131,3 +131,42 @@ class CreateSecretarySerializer(serializers.Serializer):
             raise serializers.ValidationError("Secretary ID already exists.")
 
         return value
+
+
+class StudentSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source='user.name')
+    email = serializers.EmailField(source='user.email')
+
+    class Meta:
+        model = Student
+        fields = (
+            'name',
+            'email',
+            'student_id',
+        )
+
+
+class TeacherSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source='user.name')
+    email = serializers.EmailField(source='user.email')
+
+    class Meta:
+        model = Teacher
+        fields = (
+            'name',
+            'email',
+            'teacher_id',
+        )
+
+
+class SecretarySerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source='user.name')
+    email = serializers.EmailField(source='user.email')
+
+    class Meta:
+        model = Secretary
+        fields = (
+            'name',
+            'email',
+            'secretary_id'
+        )

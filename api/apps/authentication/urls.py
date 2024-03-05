@@ -16,6 +16,11 @@ from django_rest_passwordreset.views import (
 
 urlpatterns = [
     path(
+        'me/',
+        user.UserDetailView.as_view(),
+        name='user_detail'
+    ),
+    path(
         'confirm/<str:token>/',
         user.UserConfirmView.as_view(),
         name='confirm_user'
