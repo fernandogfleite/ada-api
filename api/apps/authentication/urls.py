@@ -16,6 +16,16 @@ from django_rest_passwordreset.views import (
 
 urlpatterns = [
     path(
+        'confirm/<str:token>/',
+        user.UserConfirmView.as_view(),
+        name='confirm_user'
+    ),
+    path(
+        'resend-confirm/',
+        user.UserResendConfirmView.as_view(),
+        name='resend_confirm_user'
+    ),
+    path(
         'token/',
         TokenObtainPairView.as_view(serializer_class=JWTSerializer),
         name='token_obtain_pair'
