@@ -41,17 +41,17 @@ class CreateUserViewSet(CreateModelMixin, GenericViewSet):
         )
 
 
-class StudentRegisterViewSet(CreateModelMixin, GenericViewSet):
+class StudentRegisterViewSet(CreateUserViewSet):
     serializer_class = CreateStudentSerializer
     message = "Estudante criado com sucesso. Por favor, verifique seu email."
 
 
-class SecretaryRegisterViewSet(CreateModelMixin, GenericViewSet):
+class SecretaryRegisterViewSet(CreateUserViewSet):
     serializer_class = CreateSecretarySerializer
     message = "Secretário criado com sucesso. Por favor, verifique seu email."
 
 
-class TeacherRegisterViewSet(CreateModelMixin, GenericViewSet):
+class TeacherRegisterViewSet(CreateUserViewSet):
     permission_classes = [IsAuthenticated, IsSecretary]
     serializer_class = CreateTeacherSerializer
     message = "Professor criado com sucesso. Por favor, verifique seu email."

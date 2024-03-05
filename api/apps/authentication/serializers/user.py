@@ -30,7 +30,7 @@ class JWTSerializer(TokenObtainPairSerializer):
 
 class CreateStudentSerializer(serializers.Serializer):
     name = serializers.CharField(write_only=True)
-    email = email = serializers.EmailField(
+    email = serializers.EmailField(
         required=True,
         validators=[
             UniqueValidator(
@@ -42,18 +42,30 @@ class CreateStudentSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True)
     student_id = serializers.CharField(write_only=True)
 
+    def validate_student_id(self, value):
+        if Student.objects.filter(student_id=value).exists():
+            raise serializers.ValidationError("Student ID already exists.")
+
+        return value
+
     def create(self, validated_data):
-        return Student.objects.create_student(
+        instance = Student.objects.create_student(
             email=validated_data['email'],
             name=validated_data['name'],
             password=validated_data['password'],
             student_id=validated_data['student_id']
         )
 
+        return {
+            "email": instance.user.email,
+            "name": instance.user.name,
+            "student_id": instance.student_id,
+        }
+
 
 class CreateTeacherSerializer(serializers.Serializer):
     name = serializers.CharField(write_only=True)
-    email = email = serializers.EmailField(
+    email = serializers.EmailField(
         required=True,
         validators=[
             UniqueValidator(
@@ -66,17 +78,29 @@ class CreateTeacherSerializer(serializers.Serializer):
     teacher_id = serializers.CharField(write_only=True)
 
     def create(self, validated_data):
-        return Teacher.objects.create_teacher(
+        instance = Teacher.objects.create_teacher(
             email=validated_data['email'],
             name=validated_data['name'],
             password=validated_data['password'],
             teacher_id=validated_data['teacher_id']
         )
 
+        return {
+            "email": instance.user.email,
+            "name": instance.user.name,
+            "teacher_id": instance.teacher_id,
+        }
+
+    def validate_teacher_id(self, value):
+        if Teacher.objects.filter(teacher_id=value).exists():
+            raise serializers.ValidationError("Teacher ID already exists.")
+
+        return value
+
 
 class CreateSecretarySerializer(serializers.Serializer):
     name = serializers.CharField(write_only=True)
-    email = email = serializers.EmailField(
+    email = serializers.EmailField(
         required=True,
         validators=[
             UniqueValidator(
@@ -89,9 +113,21 @@ class CreateSecretarySerializer(serializers.Serializer):
     secretary_id = serializers.CharField(write_only=True)
 
     def create(self, validated_data):
-        return Secretary.objects.create_secretary(
+        instance = Secretary.objects.create_secretary(
             email=validated_data['email'],
             name=validated_data['name'],
             password=validated_data['password'],
             secretary_id=validated_data['secretary_id']
         )
+
+        return {
+            "email": instance.user.email,
+            "name": instance.user.name,
+            "secretary_id": instance.secretary_id,
+        }
+
+    def validate_secretary_id(self, value):
+        if Secretary.objects.filter(secretary_id=value).exists():
+            raise serializers.ValidationError("Secretary ID already exists.")
+
+        return value
