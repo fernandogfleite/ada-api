@@ -36,5 +36,11 @@ Agora rode a aplicação:
 
 ```python manage.py runserver```
 
+
+Abra outro terminal e execute o celery:
+
+```celery -A api worker -l INFO ```
+
+
 Rota administrativa:
 [http://localhost:8000/admin/](http://localhost:8000/admin/)
