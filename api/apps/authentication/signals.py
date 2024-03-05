@@ -13,7 +13,7 @@ from decouple import config
 def send_email_confirmation(sender, instance, created, **kwargs):
     if created:
         data = {
-            "name": instance.user.first_name,
+            "name": instance.user.name,
             "link": config('CONFIRM_EMAIL_URL') + f"?identification_code={instance.token}",
         }
 
