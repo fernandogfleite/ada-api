@@ -14,7 +14,7 @@ def send_email_confirmation(sender, instance, created, **kwargs):
     if created:
         data = {
             "name": instance.user.first_name,
-            "link": config('CONFIRM_EMAIL_URL') + f"?identification_code={instance.identification_code}",
+            "link": config('CONFIRM_EMAIL_URL') + f"?identification_code={instance.token}",
         }
 
         task_send_email.delay(
