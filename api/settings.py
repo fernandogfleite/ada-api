@@ -52,6 +52,7 @@ CORS_ALLOW_HEADERS = (
 
 INSTALLED_APPS = [
     'api.apps.authentication.apps.AuthenticationConfig',
+    'api.apps.classroom.apps.ClassroomConfig',
 
     'django.contrib.admin',
     'django.contrib.auth',
