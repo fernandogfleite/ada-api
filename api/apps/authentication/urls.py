@@ -21,6 +21,11 @@ urlpatterns = [
         name='user_detail'
     ),
     path(
+        'me/change-password/',
+        user.UserChangePasswordView.as_view(),
+        name='user_change_password'
+    ),
+    path(
         'confirm/<str:token>/',
         user.UserConfirmView.as_view(),
         name='confirm_user'

@@ -6,7 +6,12 @@ from rest_framework.mixins import CreateModelMixin
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import (
+    ValidationError,
+    NotFound
+)
+from rest_framework.generics import UpdateAPIView
+from rest_framework.mixins import UpdateModelMixin
 
 from api.apps.authentication.models.user import (
     Secretary,
@@ -15,14 +20,15 @@ from api.apps.authentication.models.user import (
     User,
     UserConfirmation
 )
-from api.apps.authentication.permissions import IsSecretary
+from api.apps.authentication.permissions import IsSecretary, IsStudent, IsTeacher
 from api.apps.authentication.serializers.user import (
     CreateSecretarySerializer,
     CreateStudentSerializer,
     CreateTeacherSerializer,
     SecretarySerializer,
     StudentSerializer,
-    TeacherSerializer
+    TeacherSerializer,
+    UserChangePasswordSerializer
 )
 from api.apps.authentication.signals import send_email_confirmation
 
@@ -58,7 +64,7 @@ class SecretaryRegisterViewSet(CreateUserViewSet):
 
 
 class TeacherRegisterViewSet(CreateUserViewSet):
-    permission_classes = [IsAuthenticated, IsSecretary]
+    permission_classes = (IsAuthenticated, IsSecretary)
     serializer_class = CreateTeacherSerializer
     message = "Professor criado com sucesso. Por favor, verifique seu email."
 
@@ -114,7 +120,7 @@ class UserResendConfirmView(APIView):
             )
 
         try:
-            user = User.objects.get(email=email)
+            user = User.objects.get(email=email, is_active=True)
 
             if user.is_confirmed:
                 return Response(
@@ -143,24 +149,75 @@ class UserResendConfirmView(APIView):
 
 
 class UserDetailView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated, IsSecretary | IsTeacher | IsStudent)
     serializer_class = None
     model = None
 
+    def get_serializer_class(self):
+        if self.request.user.is_student:
+            return StudentSerializer
+        elif self.request.user.is_teacher:
+            return TeacherSerializer
+        elif self.request.user.is_secretary:
+            return SecretarySerializer
+        else:
+            return None
+
+    def get_model(self):
+        if self.request.user.is_student:
+            return Student
+        elif self.request.user.is_teacher:
+            return Teacher
+        elif self.request.user.is_secretary:
+            return Secretary
+        else:
+            return None
+
+    def get_object(self):
+        try:
+            self.model = self.get_model()
+
+            return self.model.objects.get(user=self.request.user, is_active=True)
+
+        except self.model.DoesNotExist:
+            raise NotFound(
+                {
+                    "detail": "Usuário não encontrado."
+                }
+            )
+
     def get(self, request, format=None):
-        if request.user.is_student:
-            self.serializer_class = StudentSerializer
-            self.model = Student
+        self.serializer_class = self.get_serializer_class()
+        instance = self.get_object()
 
-        elif request.user.is_teacher:
-            self.serializer_class = TeacherSerializer
-            self.model = Teacher
-
-        elif request.user.is_secretary:
-            self.serializer_class = SecretarySerializer
-            self.model = Secretary
-
-        instance = self.model.objects.get(user=request.user)
         serializer = self.serializer_class(instance)
 
         return Response(serializer.data)
+
+    def put(self, request, format=None, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+
+        self.serializer_class = self.get_serializer_class()
+        instance = self.get_object()
+
+        serializer = self.serializer_class(
+            instance,
+            data=request.data,
+            partial=partial
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data)
+
+    def patch(self, request, format=None):
+        return self.put(request, format, partial=True)
+
+
+class UserChangePasswordView(UpdateAPIView, UpdateModelMixin):
+    queryset = User.objects.all()
+    permission_classes = (IsAuthenticated, IsSecretary | IsTeacher | IsStudent)
+    serializer_class = UserChangePasswordSerializer
+
+    def get_object(self):
+        return self.request.user
