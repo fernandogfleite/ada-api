@@ -41,13 +41,13 @@ class UserManager(BaseUserManager):
 
 
 class StudentManager(models.Manager):
-    def create_student(self, email, name, password, student_id):
+    def create_student(self, email, name, password, registration_id):
         user = User.objects.create_user(email, password)
         user.name = name
         user.is_confirmed = False
         user.save()
 
-        student = self.model(user=user, student_id=student_id)
+        student = self.model(user=user, registration_id=registration_id)
         student.save()
 
         UserConfirmation.objects.create(user=user, token=str(uuid.uuid4()))
@@ -56,28 +56,13 @@ class StudentManager(models.Manager):
 
 
 class TeacherManager(models.Manager):
-    def create_teacher(self, email, name, password, teacher_id):
+    def create_teacher(self, email, name, password):
         user = User.objects.create_user(email, password)
         user.name = name
         user.is_confirmed = False
         user.save()
 
-        teacher = self.model(user=user, teacher_id=teacher_id)
-        teacher.save()
-
-        UserConfirmation.objects.create(user=user, token=str(uuid.uuid4()))
-
-        return teacher
-
-
-class TeacherManager(models.Manager):
-    def create_teacher(self, email, name, password, teacher_id):
-        user = User.objects.create_user(email, password)
-        user.name = name
-        user.is_confirmed = False
-        user.save()
-
-        teacher = self.model(user=user, teacher_id=teacher_id)
+        teacher = self.model(user=user)
         teacher.save()
 
         UserConfirmation.objects.create(user=user, token=str(uuid.uuid4()))
@@ -86,13 +71,13 @@ class TeacherManager(models.Manager):
 
 
 class SecreataryManager(models.Manager):
-    def create_secretary(self, email, name, password, secretary_id):
+    def create_secretary(self, email, name, password):
         user = User.objects.create_user(email, password)
         user.name = name
         user.is_confirmed = False
         user.save()
 
-        secretary = self.model(user=user, secretary_id=secretary_id)
+        secretary = self.model(user=user)
         secretary.save()
 
         UserConfirmation.objects.create(user=user, token=str(uuid.uuid4()))
@@ -133,16 +118,47 @@ class User(Base, AbstractBaseUser, PermissionsMixin):
     def is_secretary(self):
         return Secretary.objects.filter(user=self).exists()
 
+    @property
+    def student(self):
+        if self.is_student:
+            return Student.objects.get(user=self)
+        return None
+
+    @property
+    def teacher(self):
+        if self.is_teacher:
+            return Teacher.objects.get(user=self)
+        return None
+
+    @property
+    def secretary(self):
+        if self.is_secretary:
+            return Secretary.objects.get(user=self)
+        return None
+
+    @property
+    def child(self):
+        if self.is_student:
+            return self.student
+
+        if self.is_teacher:
+            return self.teacher
+
+        if self.is_secretary:
+            return self.secretary
+
+        return None
+
 
 class Student(Base):
     user = models.OneToOneField(
         User, on_delete=models.CASCADE, primary_key=True)
-    student_id = models.CharField(max_length=255, unique=True)
+    registration_id = models.CharField(max_length=255, unique=True)
 
     objects = StudentManager()
 
     def __str__(self):
-        return self.student_id
+        return f"Student - {self.user.name} - {self.registration_id}"
 
     class Meta:
         db_table = 'students'
@@ -154,13 +170,11 @@ class Student(Base):
 class Teacher(Base):
     user = models.OneToOneField(
         User, on_delete=models.CASCADE, primary_key=True)
-    teacher_id = models.CharField(
-        max_length=255, unique=True, blank=True, null=True)
 
     objects = TeacherManager()
 
     def __str__(self):
-        return self.teacher_id
+        return f"Teacher - {self.user.name}"
 
     class Meta:
         db_table = 'teachers'
@@ -172,13 +186,11 @@ class Teacher(Base):
 class Secretary(Base):
     user = models.OneToOneField(
         User, on_delete=models.CASCADE, primary_key=True)
-    secretary_id = models.CharField(
-        max_length=255, unique=True, blank=True, null=True)
 
     objects = SecreataryManager()
 
     def __str__(self):
-        return self.secretary_id
+        return f"Secretary - {self.user.name}"
 
     class Meta:
         db_table = 'secretaries'

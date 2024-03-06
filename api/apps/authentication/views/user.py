@@ -1,7 +1,9 @@
 from rest_framework import (
     status,
 )
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import (
+    IsAuthenticated,
+)
 from rest_framework.mixins import CreateModelMixin
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.response import Response
@@ -14,13 +16,14 @@ from rest_framework.generics import UpdateAPIView
 from rest_framework.mixins import UpdateModelMixin
 
 from api.apps.authentication.models.user import (
-    Secretary,
-    Student,
-    Teacher,
     User,
     UserConfirmation
 )
-from api.apps.authentication.permissions import IsSecretary, IsStudent, IsTeacher
+from api.apps.authentication.permissions import (
+    IsSecretary,
+    IsStudent,
+    IsTeacher
+)
 from api.apps.authentication.serializers.user import (
     CreateSecretarySerializer,
     CreateStudentSerializer,
@@ -60,6 +63,7 @@ class StudentRegisterViewSet(CreateUserViewSet):
 
 
 class SecretaryRegisterViewSet(CreateUserViewSet):
+    permission_classes = (IsAuthenticated,)
     serializer_class = CreateSecretarySerializer
     message = "Secretário criado com sucesso. Por favor, verifique seu email."
 
@@ -161,20 +165,31 @@ class UserDetailView(APIView):
                 }
             )
 
-        return self.request.user
+        return self.request.user.child
+
+    def get_serializer_class(self):
+        if self.request.user.is_student:
+            return StudentSerializer
+
+        if self.request.user.is_teacher:
+            return TeacherSerializer
+
+        if self.request.user.is_secretary:
+            return SecretarySerializer
+
+        return self.serializer_class
 
     def get(self, request, format=None):
         instance = self.get_object()
-
-        serializer = self.serializer_class(instance)
+        serializer = self.get_serializer_class()(instance)
 
         return Response(serializer.data)
 
     def put(self, request, format=None, *args, **kwargs):
         partial = kwargs.pop('partial', False)
-        instance = self.get_object()
+        instance = self.get_object().user
 
-        serializer = self.serializer_class(
+        serializer = UpdateUserSerializer(
             instance,
             data=request.data,
             partial=partial
