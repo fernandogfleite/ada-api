@@ -145,6 +145,20 @@ class StudentSerializer(serializers.ModelSerializer):
             'student_id',
         )
 
+    def update(self, instance, validated_data):
+        user = instance.user
+        user.name = validated_data.get('name', user.name)
+        user.email = validated_data.get('email', user.email)
+        user.save()
+
+        instance.student_id = validated_data.get(
+            'student_id',
+            instance.student_id
+        )
+        instance.save()
+
+        return instance
+
 
 class TeacherSerializer(serializers.ModelSerializer):
     name = serializers.CharField(source='user.name')
@@ -158,6 +172,20 @@ class TeacherSerializer(serializers.ModelSerializer):
             'teacher_id',
         )
 
+    def update(self, instance, validated_data):
+        user = instance.user
+        user.name = validated_data.get('name', user.name)
+        user.email = validated_data.get('email', user.email)
+        user.save()
+
+        instance.teacher_id = validated_data.get(
+            'teacher_id',
+            instance.teacher_id
+        )
+        instance.save()
+
+        return instance
+
 
 class SecretarySerializer(serializers.ModelSerializer):
     name = serializers.CharField(source='user.name')
@@ -170,3 +198,42 @@ class SecretarySerializer(serializers.ModelSerializer):
             'email',
             'secretary_id'
         )
+
+    def update(self, instance, validated_data):
+        user = instance.user
+        user.name = validated_data.get('name', user.name)
+        user.email = validated_data.get('email', user.email)
+        user.save()
+
+        instance.secretary_id = validated_data.get(
+            'secretary_id',
+            instance.secretary_id
+        )
+        instance.save()
+
+        return instance
+
+
+class UserChangePasswordSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+    new_password = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = User
+        fields = (
+            "password",
+            "new_password",
+        )
+
+    def update(self, instance, validated_data) -> User:
+        if not instance.check_password(validated_data['password']):
+            raise serializers.ValidationError(
+                {
+                    "password": "Senha incorreta."
+                }
+            )
+
+        instance.set_password(validated_data['new_password'])
+        instance.save()
+
+        return instance
