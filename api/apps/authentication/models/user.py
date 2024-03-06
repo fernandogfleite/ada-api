@@ -137,12 +137,12 @@ class User(Base, AbstractBaseUser, PermissionsMixin):
 class Student(Base):
     user = models.OneToOneField(
         User, on_delete=models.CASCADE, primary_key=True)
-    student_id = models.CharField(max_length=255, unique=True)
+    registration_id = models.CharField(max_length=255, unique=True)
 
     objects = StudentManager()
 
     def __str__(self):
-        return self.student_id
+        return f"Student - {self.user.name} - {self.registration_id}"
 
     class Meta:
         db_table = 'students'
@@ -154,13 +154,11 @@ class Student(Base):
 class Teacher(Base):
     user = models.OneToOneField(
         User, on_delete=models.CASCADE, primary_key=True)
-    teacher_id = models.CharField(
-        max_length=255, unique=True, blank=True, null=True)
 
     objects = TeacherManager()
 
     def __str__(self):
-        return self.teacher_id
+        return f"Teacher - {self.user.name}"
 
     class Meta:
         db_table = 'teachers'
@@ -172,13 +170,11 @@ class Teacher(Base):
 class Secretary(Base):
     user = models.OneToOneField(
         User, on_delete=models.CASCADE, primary_key=True)
-    secretary_id = models.CharField(
-        max_length=255, unique=True, blank=True, null=True)
 
     objects = SecreataryManager()
 
     def __str__(self):
-        return self.secretary_id
+        return f"Secretary - {self.user.name}"
 
     class Meta:
         db_table = 'secretaries'
