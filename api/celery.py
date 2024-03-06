@@ -5,9 +5,9 @@ from celery import Celery
 from celery.schedules import crontab
 
 # Set the default Django settings module for the 'celery' program.
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'wsaude.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'api.settings')
 
-app = Celery('wsaude')
+app = Celery('api')
 
 app.config_from_object('django.conf:settings')
 
