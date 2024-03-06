@@ -1,5 +1,6 @@
 from api.apps.authentication.models.user import (
     Base,
+    Student,
     Teacher
 )
 
@@ -107,6 +108,25 @@ class SubjectPeriod(Base):
         db_table = 'subjects_periods'
         verbose_name = 'subject period'
         verbose_name_plural = 'subjects periods'
+
+
+class SubjectPeriodStudent(Base):
+    subject_period = models.ForeignKey(
+        SubjectPeriod,
+        on_delete=models.CASCADE
+    )
+    student = models.ForeignKey(
+        Student,
+        on_delete=models.CASCADE
+    )
+
+    def __str__(self):
+        return f'{self.subject_period.subject.name} - {self.subject_period.period.year} - {self.subject_period.period.semester}'
+
+    class Meta:
+        db_table = 'subjects_periods_students'
+        verbose_name = 'subject period student'
+        verbose_name_plural = 'subjects periods students'
 
 
 class SubjectPeriodWeekday(Base):
