@@ -145,20 +145,6 @@ class StudentSerializer(serializers.ModelSerializer):
             'student_id',
         )
 
-    def update(self, instance, validated_data):
-        user = instance.user
-        user.name = validated_data.get('name', user.name)
-        user.email = validated_data.get('email', user.email)
-        user.save()
-
-        instance.student_id = validated_data.get(
-            'student_id',
-            instance.student_id
-        )
-        instance.save()
-
-        return instance
-
 
 class TeacherSerializer(serializers.ModelSerializer):
     name = serializers.CharField(source='user.name')
@@ -171,20 +157,6 @@ class TeacherSerializer(serializers.ModelSerializer):
             'email',
             'teacher_id',
         )
-
-    def update(self, instance, validated_data):
-        user = instance.user
-        user.name = validated_data.get('name', user.name)
-        user.email = validated_data.get('email', user.email)
-        user.save()
-
-        instance.teacher_id = validated_data.get(
-            'teacher_id',
-            instance.teacher_id
-        )
-        instance.save()
-
-        return instance
 
 
 class SecretarySerializer(serializers.ModelSerializer):
@@ -199,16 +171,32 @@ class SecretarySerializer(serializers.ModelSerializer):
             'secretary_id'
         )
 
-    def update(self, instance, validated_data):
-        user = instance.user
-        user.name = validated_data.get('name', user.name)
-        user.email = validated_data.get('email', user.email)
-        user.save()
 
-        instance.secretary_id = validated_data.get(
-            'secretary_id',
-            instance.secretary_id
+class UpdateUserSerializer(serializers.ModelSerializer):
+    name = serializers.CharField()
+    email = serializers.EmailField()
+
+    class Meta:
+        model = User
+        fields = (
+            "name",
+            "email",
         )
+
+    def validate_email(self, value):
+        if self.instance.email != value and User.objects.filter(email=value).exists():
+            raise serializers.ValidationError(
+                {
+                    "email": "Email já cadastrado."
+                }
+            )
+
+        return value
+
+    def update(self, instance, validated_data):
+        instance.name = validated_data.get('name', instance.name)
+        instance.email = validated_data.get('email', instance.email)
+
         instance.save()
 
         return instance

@@ -28,6 +28,7 @@ from api.apps.authentication.serializers.user import (
     SecretarySerializer,
     StudentSerializer,
     TeacherSerializer,
+    UpdateUserSerializer,
     UserChangePasswordSerializer
 )
 from api.apps.authentication.signals import send_email_confirmation
@@ -150,44 +151,19 @@ class UserResendConfirmView(APIView):
 
 class UserDetailView(APIView):
     permission_classes = (IsAuthenticated, IsSecretary | IsTeacher | IsStudent)
-    serializer_class = None
-    model = None
-
-    def get_serializer_class(self):
-        if self.request.user.is_student:
-            return StudentSerializer
-        elif self.request.user.is_teacher:
-            return TeacherSerializer
-        elif self.request.user.is_secretary:
-            return SecretarySerializer
-        else:
-            return None
-
-    def get_model(self):
-        if self.request.user.is_student:
-            return Student
-        elif self.request.user.is_teacher:
-            return Teacher
-        elif self.request.user.is_secretary:
-            return Secretary
-        else:
-            return None
+    serializer_class = UpdateUserSerializer
 
     def get_object(self):
-        try:
-            self.model = self.get_model()
-
-            return self.model.objects.get(user=self.request.user, is_active=True)
-
-        except self.model.DoesNotExist:
+        if not self.request.user.is_active:
             raise NotFound(
                 {
                     "detail": "Usuário não encontrado."
                 }
             )
 
+        return self.request.user
+
     def get(self, request, format=None):
-        self.serializer_class = self.get_serializer_class()
         instance = self.get_object()
 
         serializer = self.serializer_class(instance)
@@ -196,8 +172,6 @@ class UserDetailView(APIView):
 
     def put(self, request, format=None, *args, **kwargs):
         partial = kwargs.pop('partial', False)
-
-        self.serializer_class = self.get_serializer_class()
         instance = self.get_object()
 
         serializer = self.serializer_class(
@@ -220,4 +194,11 @@ class UserChangePasswordView(UpdateAPIView, UpdateModelMixin):
     serializer_class = UserChangePasswordSerializer
 
     def get_object(self):
+        if not self.request.user.is_active:
+            raise NotFound(
+                {
+                    "detail": "Usuário não encontrado."
+                }
+            )
+
         return self.request.user
