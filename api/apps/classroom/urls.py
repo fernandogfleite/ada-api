@@ -6,7 +6,8 @@ from api.apps.classroom.views.classroom import (
     SubjectPeriodStudentViewSet,
     ClassroomViewSet,
     ListLoggedUserClassrooms,
-    ListLoggedUserSubjectPeriods
+    ListLoggedUserSubjectPeriods,
+    ListStudentInSubjectPeriod
 )
 
 from rest_framework.routers import DefaultRouter
@@ -27,5 +28,10 @@ router.register('user-subject-periods', ListLoggedUserSubjectPeriods)
 
 
 urlpatterns = [
+    path(
+        'subject-period-students/<int:subject_period_id>/students/',
+        ListStudentInSubjectPeriod.as_view(),
+        name='list-student-in-subject-period'
+    ),
     path('', include(router.urls)),
 ]
