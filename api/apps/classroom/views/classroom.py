@@ -1,10 +1,12 @@
 from api.apps.classroom.models.classroom import (
     Period,
     Room,
+    Subject
 )
 from api.apps.classroom.serializers.classroom import (
     PeriodSerializer,
     RoomSerializer,
+    SubjectSerializer
 )
 from api.apps.authentication.permissions import (
     IsTeacher,
@@ -38,4 +40,11 @@ class RoomViewSet(SecretaryMixin,
                   ModelViewSet):
     queryset = Room.objects.all()
     serializer_class = RoomSerializer
+    permission_classes = (IsAuthenticated,)
+
+
+class SubjectViewSet(SecretaryMixin,
+                     ModelViewSet):
+    queryset = Subject.objects.all()
+    serializer_class = SubjectSerializer
     permission_classes = (IsAuthenticated,)
