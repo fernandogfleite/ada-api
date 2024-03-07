@@ -226,3 +226,25 @@ class ListLoggedUserClassrooms(ListModelMixin,
             'start_time',
             'end_time'
         )
+
+
+class ListStudentInSubjectPeriod(ListModelMixin,
+                                 GenericViewSet):
+    queryset = SubjectPeriodStudent.objects.all()
+    serializer_class = SubjectPeriodStudentSerializer
+    permission_classes = (IsAuthenticated, IsTeacher | IsSecretary)
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        query = Q()
+
+        subject_period_id = self.kwargs.get('subject_period_id')
+
+        if subject_period_id:
+            query &= Q(subject_period_id=subject_period_id)
+
+        if self.request.user.is_teacher:
+            query &= Q(subject_period__teacher__user_id=self.request.user.id)
+
+        return queryset.filter(query).order_by('id')
