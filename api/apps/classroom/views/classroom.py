@@ -3,14 +3,16 @@ from api.apps.classroom.models.classroom import (
     Room,
     Subject,
     SubjectPeriod,
-    SubjectPeriodStudent
+    SubjectPeriodStudent,
+    Classroom
 )
 from api.apps.classroom.serializers.classroom import (
     PeriodSerializer,
     RoomSerializer,
     SubjectSerializer,
     SubjectPeriodSerializer,
-    SubjectPeriodStudentSerializer
+    SubjectPeriodStudentSerializer,
+    ClassroomSerializer
 )
 from api.apps.authentication.permissions import (
     IsTeacher,
@@ -39,7 +41,9 @@ class SecretaryMixin:
             self.permission_classes = (IsAuthenticated, IsSecretary)
         else:
             self.permission_classes = (
-                IsAuthenticated, IsTeacher | IsStudent | IsSecretary)
+                IsAuthenticated,
+                IsTeacher | IsStudent | IsSecretary
+            )
 
         return super().get_permissions()
 
@@ -93,15 +97,17 @@ class SubjectPeriodViewSet(SecretaryMixin,
         return queryset.filter(query).order_by('id')
 
 
-class SubjectPeriodStudentViewSet(SecretaryMixin,
-                                  CreateModelMixin,
+class SubjectPeriodStudentViewSet(CreateModelMixin,
                                   ListModelMixin,
                                   RetrieveModelMixin,
                                   DestroyModelMixin,
                                   GenericViewSet):
     queryset = SubjectPeriodStudent.objects.all()
     serializer_class = SubjectPeriodStudentSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (
+        IsAuthenticated,
+        IsStudent | IsSecretary | IsTeacher
+    )
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -119,3 +125,23 @@ class SubjectPeriodStudentViewSet(SecretaryMixin,
                 query &= Q(subject_period_id=subject_period_id)
 
         return queryset.filter(query).order_by('id')
+
+
+class ClassroomViewSet(ModelViewSet):
+    queryset = Classroom.objects.all()
+    serializer_class = ClassroomSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get_permissions(self):
+        if self.action in ('create', 'update', 'partial_update', 'destroy'):
+            self.permission_classes = (
+                IsAuthenticated,
+                IsTeacher | IsSecretary
+            )
+        else:
+            self.permission_classes = (
+                IsAuthenticated,
+                IsTeacher | IsStudent | IsSecretary
+            )
+
+        return super().get_permissions()
