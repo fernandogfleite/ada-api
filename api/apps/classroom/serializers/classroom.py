@@ -1,6 +1,7 @@
 from api.apps.classroom.models.classroom import (
     Period,
-    Room
+    Room,
+    Subject
 )
 
 from rest_framework import serializers
@@ -75,3 +76,38 @@ class RoomSerializer(serializers.ModelSerializer):
                 )
 
         return value
+
+
+class SubjectSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subject
+        fields = '__all__'
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+
+        if self.instance:
+            if Subject.objects.filter(
+                name=attrs.get('name', self.instance.name),
+                code=attrs.get('code', self.instance.code)
+            ).exclude(
+                id=self.instance.id
+            ).exists():
+                raise serializers.ValidationError(
+                    {
+                        'detail': 'Essa disciplina já foi cadastrada com esse código'
+                    }
+                )
+        else:
+            if Subject.objects.filter(
+                name=attrs['name'],
+                code=attrs['code']
+            ).exists():
+                raise serializers.ValidationError(
+                    {
+                        'detail': 'Essa disciplina já foi cadastrada com esse código'
+                    }
+                )
+
+        return attrs
