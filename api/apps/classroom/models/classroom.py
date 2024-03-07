@@ -1,8 +1,8 @@
 from api.apps.authentication.models.user import (
-    Base,
     Student,
     Teacher
 )
+from api.apps.utils.models import Base
 
 from django.db import (
     models,

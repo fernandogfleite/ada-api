@@ -1,3 +1,5 @@
+from api.apps.utils.models import Base
+
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
@@ -6,14 +8,6 @@ from django.contrib.auth.models import (
 from django.db import models
 
 import uuid
-
-
-class Base(models.Model):
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        abstract = True
 
 
 class UserManager(BaseUserManager):
