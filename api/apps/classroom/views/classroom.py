@@ -31,8 +31,11 @@ from rest_framework.mixins import (
     DestroyModelMixin
 )
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import ValidationError
 
 from django.db.models import Q
+
+from datetime import datetime
 
 
 class SecretaryMixin:
@@ -145,3 +148,81 @@ class ClassroomViewSet(ModelViewSet):
             )
 
         return super().get_permissions()
+
+
+class ListLoggedUserSubjectPeriods(ListModelMixin,
+                                   GenericViewSet):
+    queryset = SubjectPeriod.objects.all()
+    serializer_class = SubjectPeriodSerializer
+    permission_classes = (IsAuthenticated, IsTeacher | IsStudent | IsSecretary)
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        query = Q()
+
+        if self.request.user.is_teacher:
+            query &= Q(teacher_id=self.request.user.id)
+
+        elif self.request.user.is_student:
+            query &= Q(
+                id__in=SubjectPeriodStudent.objects.filter(
+                    student__user_id=self.request.user.id
+                ).values('subject_period_id')
+            )
+
+        return queryset.filter(query).order_by(
+            'period__year',
+            'period__semester',
+            'subject__name'
+        )
+
+
+class ListLoggedUserClassrooms(ListModelMixin,
+                               GenericViewSet):
+    queryset = Classroom.objects.all()
+    serializer_class = ClassroomSerializer
+    permission_classes = (IsAuthenticated, IsTeacher | IsStudent | IsSecretary)
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        query = Q()
+
+        try:
+            start_date = datetime.strptime(
+                self.request.query_params.get('start_date'),
+                '%Y-%m-%d'
+            )
+            end_date = datetime.strptime(
+                self.request.query_params.get('end_date'),
+                '%Y-%m-%d'
+            )
+
+            query &= Q(
+                date__gte=start_date,
+                date__lte=end_date
+            )
+
+        except:
+            raise ValidationError(
+                {
+                    'detail': 'Data inválida. Formato esperado: YYYY-MM-DD.'
+                }
+            )
+
+        if self.request.user.is_teacher:
+            query &= Q(teacher_id=self.request.user.id)
+
+        elif self.request.user.is_student:
+            query &= Q(
+                subject_period_id__in=SubjectPeriodStudent.objects.filter(
+                    student__user_id=self.request.user.id
+                ).values('subject_period_id')
+            )
+
+        return queryset.filter(query).order_by(
+            'date',
+            'start_time',
+            'end_time'
+        )
