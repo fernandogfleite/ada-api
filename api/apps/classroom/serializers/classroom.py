@@ -1,5 +1,6 @@
 from api.apps.classroom.models.classroom import (
-    Period
+    Period,
+    Room
 )
 
 from rest_framework import serializers
@@ -45,3 +46,32 @@ class PeriodSerializer(serializers.ModelSerializer):
                 )
 
         return attrs
+
+
+class RoomSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Period
+        fields = '__all__'
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def validate_name(self, value):
+        if self.instance:
+            if Room.objects.filter(
+                name=value
+            ).exclude(
+                id=self.instance.id
+            ).exists():
+                raise serializers.ValidationError(
+                    {
+                        'detail': 'Essa sala já foi cadastrada'
+                    }
+                )
+        else:
+            if Room.objects.filter(name=value).exists():
+                raise serializers.ValidationError(
+                    {
+                        'detail': 'Essa sala já foi cadastrada'
+                    }
+                )
+
+        return value
