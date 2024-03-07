@@ -138,7 +138,7 @@ class SubjectPeriodWeekday(Base):
     SATURDAY = 5
     SUNDAY = 6
 
-    DAY_OF_WEEK = (
+    WEEKDAYS = (
         (MONDAY, 'Segunda-feira'),
         (TUESDAY, 'Terça-feira'),
         (WEDNESDAY, 'Quarta-feira'),
@@ -152,7 +152,7 @@ class SubjectPeriodWeekday(Base):
         SubjectPeriod,
         on_delete=models.CASCADE
     )
-    weekday = models.IntegerField(choices=DAY_OF_WEEK)
+    weekday = models.IntegerField(choices=WEEKDAYS)
     start_time = models.TimeField()
     end_time = models.TimeField()
 
