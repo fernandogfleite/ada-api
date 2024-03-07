@@ -1,10 +1,21 @@
+from api.apps.authentication.serializers.fields.user import TeacherField
 from api.apps.classroom.models.classroom import (
     Period,
     Room,
-    Subject
+    Subject,
+    SubjectPeriod,
+    SubjectPeriodWeekday
+)
+from api.apps.classroom.serializers.fields.classroom import (
+    PeriodField,
+    SubjectField
 )
 
 from rest_framework import serializers
+
+from django.db import transaction
+
+from api.apps.utils.fields import CustomChoiceField
 
 
 class PeriodSerializer(serializers.ModelSerializer):
@@ -111,3 +122,81 @@ class SubjectSerializer(serializers.ModelSerializer):
                 )
 
         return attrs
+
+
+class DayOfWeekSerializer(serializers.Serializer):
+    weekday = CustomChoiceField(choices=SubjectPeriodWeekday.WEEKDAYS)
+    start_time = serializers.TimeField()
+    end_time = serializers.TimeField()
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+
+        if attrs['start_time'] > attrs['end_time']:
+            raise serializers.ValidationError(
+                {
+                    'detail': 'A hora de início não pode ser maior que a hora de fim'
+                }
+            )
+
+        return attrs
+
+
+class SubjectPeriodSerializer(serializers.ModelSerializer):
+    subject = SubjectField()
+    teacher = TeacherField()
+    period = PeriodField()
+    days_of_week = DayOfWeekSerializer(many=True)
+
+    class Meta:
+        model = SubjectPeriod
+        fields = '__all__'
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+
+        if self.instance:
+            if SubjectPeriod.objects.filter(
+                period=attrs.get('period', self.instance.period),
+                subject=attrs.get('subject', self.instance.subject),
+                teacher=attrs.get('teacher', self.instance.teacher)
+            ).exclude(
+                id=self.instance.id
+            ).exists():
+                raise serializers.ValidationError(
+                    {
+                        'detail': 'Essa disciplina já foi cadastrada para esse semestre com esse professor'
+                    }
+                )
+        else:
+            if SubjectPeriod.objects.filter(
+                period=attrs['period'],
+                subject=attrs['subject'],
+                teacher=attrs['teacher']
+            ).exists():
+                raise serializers.ValidationError(
+                    {
+                        'detail': 'Essa disciplina já foi cadastrada para esse semestre com esse professor'
+                    }
+                )
+
+        return attrs
+
+    @transaction.atomic
+    def create(self, validated_data):
+        days_of_week = validated_data.pop('days_of_week')
+        subject_period = SubjectPeriod.objects.create(**validated_data)
+
+        for day_of_week in days_of_week:
+            SubjectPeriod.objects.create_subject_period_weekday(
+                subject_period,
+                day_of_week['weekday'],
+                day_of_week['start_time'],
+                day_of_week['end_time']
+            )
+
+        return subject_period
+
+    def update(self, instance, validated_data):
+        raise NotImplementedError('Não é possível atualizar uma disciplina')
