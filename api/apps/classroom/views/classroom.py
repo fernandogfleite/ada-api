@@ -1,12 +1,14 @@
 from api.apps.classroom.models.classroom import (
     Period,
     Room,
-    Subject
+    Subject,
+    SubjectPeriod
 )
 from api.apps.classroom.serializers.classroom import (
     PeriodSerializer,
     RoomSerializer,
-    SubjectSerializer
+    SubjectSerializer,
+    SubjectPeriodSerializer
 )
 from api.apps.authentication.permissions import (
     IsTeacher,
@@ -14,7 +16,16 @@ from api.apps.authentication.permissions import (
     IsSecretary
 )
 
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import (
+    ModelViewSet,
+    GenericViewSet
+)
+from rest_framework.mixins import (
+    CreateModelMixin,
+    ListModelMixin,
+    RetrieveModelMixin,
+    DestroyModelMixin
+)
 from rest_framework.permissions import IsAuthenticated
 
 
@@ -47,4 +58,15 @@ class SubjectViewSet(SecretaryMixin,
                      ModelViewSet):
     queryset = Subject.objects.all()
     serializer_class = SubjectSerializer
+    permission_classes = (IsAuthenticated,)
+
+
+class SubjectPeriodViewSet(SecretaryMixin,
+                           CreateModelMixin,
+                           ListModelMixin,
+                           RetrieveModelMixin,
+                           DestroyModelMixin,
+                           GenericViewSet):
+    queryset = SubjectPeriod.objects.all()
+    serializer_class = SubjectPeriodSerializer
     permission_classes = (IsAuthenticated,)
