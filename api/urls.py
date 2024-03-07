@@ -25,6 +25,7 @@ urlpatterns = [
     path('api/v1/', include(
         [
             path('', include('api.apps.authentication.urls')),
+            path('classroom/', include('api.apps.classroom.urls')),
         ]
     )),
 ]
