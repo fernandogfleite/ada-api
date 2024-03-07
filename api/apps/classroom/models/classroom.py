@@ -170,12 +170,12 @@ class SubjectPeriodWeekday(Base):
 class Classroom(Base):
     CONFIRMED = 'confirmed'
     CANCELED = 'canceled'
-    PENDING = 'pending'
+    MODIFIED = 'modified'
 
     STATUS = (
         (CONFIRMED, 'Confirmada'),
         (CANCELED, 'Cancelada'),
-        (PENDING, 'Pendente'),
+        (MODIFIED, 'Modificada'),
     )
 
     date = models.DateField()
@@ -183,13 +183,14 @@ class Classroom(Base):
     end_time = models.TimeField()
     description = models.TextField()
     status = models.CharField(
-        max_length=255,
+        max_length=50,
         choices=STATUS,
-        default=PENDING
+        default=CONFIRMED
     )
     subject_period_weekday = models.ForeignKey(
         SubjectPeriodWeekday,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        null=True
     )
     room = models.ForeignKey(
         Room,
