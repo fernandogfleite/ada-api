@@ -1,7 +1,8 @@
 from api.apps.classroom.models.classroom import (
     Period,
     Subject,
-    Room
+    Room,
+    SubjectPeriod
 )
 
 from api.apps.utils.fields import ModifiedRelatedField
@@ -67,4 +68,32 @@ class RoomField(ModifiedRelatedField):
             )
 
         except Room.DoesNotExist:
+            self.fail('does_not_exist', pk_value=data)
+
+
+class SubjectPeriodField(ModifiedRelatedField):
+    def get_queryset(self):
+        return SubjectPeriod.objects.all()
+
+    def to_representation(self, value):
+        return {
+            'id': value.id,
+            'subject': {
+                'id': value.subject.id,
+                'name': value.subject.name,
+                'code': value.subject.code
+            },
+            'period': {
+                'id': value.period.id,
+                'name': value.period.name,
+            }
+        }
+
+    def to_internal_value(self, data):
+        try:
+            return SubjectPeriod.objects.get(
+                id=data
+            )
+
+        except SubjectPeriod.DoesNotExist:
             self.fail('does_not_exist', pk_value=data)
