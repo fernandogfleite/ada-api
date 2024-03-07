@@ -3,7 +3,8 @@ from api.apps.classroom.views.classroom import (
     RoomViewSet,
     SubjectViewSet,
     SubjectPeriodViewSet,
-    SubjectPeriodStudentViewSet
+    SubjectPeriodStudentViewSet,
+    ClassroomViewSet
 )
 
 from rest_framework.routers import DefaultRouter
@@ -18,6 +19,7 @@ router.register('rooms', RoomViewSet)
 router.register('subjects', SubjectViewSet)
 router.register('subject-periods', SubjectPeriodViewSet)
 router.register('subject-period-students', SubjectPeriodStudentViewSet)
+router.register('classrooms', ClassroomViewSet)
 
 
 urlpatterns = [
