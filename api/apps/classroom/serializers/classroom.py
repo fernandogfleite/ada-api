@@ -1,21 +1,25 @@
-from api.apps.authentication.serializers.fields.user import TeacherField
+from api.apps.authentication.serializers.fields.user import (
+    TeacherField,
+    StudentField
+)
 from api.apps.classroom.models.classroom import (
     Period,
     Room,
     Subject,
     SubjectPeriod,
-    SubjectPeriodWeekday
+    SubjectPeriodWeekday,
+    SubjectPeriodStudent
 )
 from api.apps.classroom.serializers.fields.classroom import (
     PeriodField,
-    SubjectField
+    SubjectField,
+    SubjectPeriodField
 )
+from api.apps.utils.fields import CustomChoiceField
 
 from rest_framework import serializers
 
 from django.db import transaction
-
-from api.apps.utils.fields import CustomChoiceField
 
 
 class PeriodSerializer(serializers.ModelSerializer):
@@ -203,3 +207,47 @@ class SubjectPeriodSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         raise NotImplementedError('Não é possível atualizar uma disciplina')
+
+
+class SubjectPeriodStudentSerializer(serializers.ModelSerializer):
+    student = StudentField()
+    subject_period = SubjectPeriodField()
+
+    class Meta:
+        model = SubjectPeriodStudent
+        fields = '__all__'
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+
+        if self.instance:
+            if SubjectPeriodStudent.objects.filter(
+                student=attrs.get(
+                    'student',
+                    self.instance.student
+                ),
+                subject_period=attrs.get(
+                    'subject_period',
+                    self.instance.subject_period
+                )
+            ).exclude(
+                id=self.instance.id
+            ).exists():
+                raise serializers.ValidationError(
+                    {
+                        'detail': 'Esse aluno já está cadastrado nessa disciplina'
+                    }
+                )
+        else:
+            if SubjectPeriodStudent.objects.filter(
+                student=attrs['student'],
+                subject_period=attrs['subject_period']
+            ).exists():
+                raise serializers.ValidationError(
+                    {
+                        'detail': 'Esse aluno já está cadastrado nessa disciplina'
+                    }
+                )
+
+        return attrs
