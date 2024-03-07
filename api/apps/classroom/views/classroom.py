@@ -2,13 +2,15 @@ from api.apps.classroom.models.classroom import (
     Period,
     Room,
     Subject,
-    SubjectPeriod
+    SubjectPeriod,
+    SubjectPeriodStudent
 )
 from api.apps.classroom.serializers.classroom import (
     PeriodSerializer,
     RoomSerializer,
     SubjectSerializer,
-    SubjectPeriodSerializer
+    SubjectPeriodSerializer,
+    SubjectPeriodStudentSerializer
 )
 from api.apps.authentication.permissions import (
     IsTeacher,
@@ -87,5 +89,33 @@ class SubjectPeriodViewSet(SecretaryMixin,
 
             if period_id:
                 query &= Q(period_id=period_id)
+
+        return queryset.filter(query).order_by('id')
+
+
+class SubjectPeriodStudentViewSet(SecretaryMixin,
+                                  CreateModelMixin,
+                                  ListModelMixin,
+                                  RetrieveModelMixin,
+                                  DestroyModelMixin,
+                                  GenericViewSet):
+    queryset = SubjectPeriodStudent.objects.all()
+    serializer_class = SubjectPeriodStudentSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        query = Q()
+
+        if self.action == 'list':
+            student_id = self.request.query_params.get('student_id')
+            subject_period_id = self.kwargs.get('subject_period_id')
+
+            if student_id:
+                query &= Q(student_id=student_id)
+
+            if subject_period_id:
+                query &= Q(subject_period_id=subject_period_id)
 
         return queryset.filter(query).order_by('id')
