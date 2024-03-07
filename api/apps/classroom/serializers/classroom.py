@@ -8,12 +8,15 @@ from api.apps.classroom.models.classroom import (
     Subject,
     SubjectPeriod,
     SubjectPeriodWeekday,
-    SubjectPeriodStudent
+    SubjectPeriodStudent,
+    Classroom
 )
 from api.apps.classroom.serializers.fields.classroom import (
     PeriodField,
     SubjectField,
-    SubjectPeriodField
+    SubjectPeriodField,
+    RoomField,
+    SubjectPeriodWeekdayField
 )
 from api.apps.utils.fields import CustomChoiceField
 
@@ -251,3 +254,72 @@ class SubjectPeriodStudentSerializer(serializers.ModelSerializer):
                 )
 
         return attrs
+
+
+class ClassroomSerializer(serializers.ModelSerializer):
+    subject_period_weekday = SubjectPeriodWeekdayField()
+    room = RoomField(
+        allow_null=True,
+        required=False
+    )
+    status = CustomChoiceField(choices=Classroom.STATUS)
+
+    class Meta:
+        model = Classroom
+        fields = '__all__'
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+
+        if self.instance:
+            if attrs.get('start_time', self.instance.start_time) > attrs.get('end_time', self.instance.end_time):
+                raise serializers.ValidationError(
+                    {
+                        'detail': 'A hora de início não pode ser maior que a hora de fim'
+                    }
+                )
+
+            if Classroom.objects.filter(
+                subject_period=attrs.get(
+                    'subject_period', self.instance.subject_period),
+                date=attrs.get('date', self.instance.date),
+                start_time=attrs.get('start_time', self.instance.start_time),
+                end_time=attrs.get('end_time', self.instance.end_time)
+            ).exclude(
+                id=self.instance.id
+            ).exists():
+                raise serializers.ValidationError(
+                    {
+                        'detail': 'Essa aula já foi cadastrada para esse dia e horário'
+                    }
+                )
+
+        else:
+            if Classroom.objects.filter(
+                subject_period=attrs['subject_period'],
+                date=attrs['date'],
+                start_time=attrs['start_time'],
+                end_time=attrs['end_time']
+            ).exists():
+                raise serializers.ValidationError(
+                    {
+                        'detail': 'Essa aula já foi cadastrada para esse dia e horário'
+                    }
+                )
+
+            if attrs['start_time'] > attrs['end_time']:
+                raise serializers.ValidationError(
+                    {
+                        'detail': 'A hora de início não pode ser maior que a hora de fim'
+                    }
+                )
+
+        return attrs
+
+    def validate_status(self, value):
+        if self.instance:
+            if self.instance.status == Classroom.CONFIRMED and value != Classroom.CANCELED:
+                value = Classroom.MODIFIED
+
+        return value
