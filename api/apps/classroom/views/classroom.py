@@ -28,6 +28,8 @@ from rest_framework.mixins import (
 )
 from rest_framework.permissions import IsAuthenticated
 
+from django.db.models import Q
+
 
 class SecretaryMixin:
     def get_permissions(self):
@@ -70,3 +72,20 @@ class SubjectPeriodViewSet(SecretaryMixin,
     queryset = SubjectPeriod.objects.all()
     serializer_class = SubjectPeriodSerializer
     permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        query = Q()
+
+        if self.action == 'list':
+            teacher_id = self.request.query_params.get('teacher_id')
+            period_id = self.request.query_params.get('period_id')
+
+            if teacher_id:
+                query &= Q(teacher_id=teacher_id)
+
+            if period_id:
+                query &= Q(period_id=period_id)
+
+        return queryset.filter(query).order_by('id')
