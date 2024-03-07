@@ -1,7 +1,8 @@
 from api.apps.classroom.views.classroom import (
     PeriodViewSet,
     RoomViewSet,
-    SubjectViewSet
+    SubjectViewSet,
+    SubjectPeriodViewSet
 )
 
 from rest_framework.routers import DefaultRouter
@@ -14,6 +15,7 @@ router = DefaultRouter()
 router.register('periods', PeriodViewSet)
 router.register('rooms', RoomViewSet)
 router.register('subjects', SubjectViewSet)
+router.register('subject-periods', SubjectPeriodViewSet)
 
 
 urlpatterns = [
