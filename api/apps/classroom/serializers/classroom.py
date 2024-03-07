@@ -221,6 +221,13 @@ class SubjectPeriodStudentSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['id', 'created_at', 'updated_at']
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if self.instance:
+            self.fields['student'].read_only = True
+            self.fields['subject_period'].read_only = True
+
     def validate(self, attrs):
         attrs = super().validate(attrs)
 
@@ -268,6 +275,12 @@ class ClassroomSerializer(serializers.ModelSerializer):
         model = Classroom
         fields = '__all__'
         read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if self.instance:
+            self.fields['subject_period_weekday'].read_only = True
 
     def validate(self, attrs):
         attrs = super().validate(attrs)
