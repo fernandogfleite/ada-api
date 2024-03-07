@@ -1,7 +1,9 @@
 from rest_framework import (
     status,
 )
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import (
+    IsAuthenticated,
+)
 from rest_framework.mixins import CreateModelMixin
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.response import Response
@@ -14,13 +16,14 @@ from rest_framework.generics import UpdateAPIView
 from rest_framework.mixins import UpdateModelMixin
 
 from api.apps.authentication.models.user import (
-    Secretary,
-    Student,
-    Teacher,
     User,
     UserConfirmation
 )
-from api.apps.authentication.permissions import IsSecretary, IsStudent, IsTeacher
+from api.apps.authentication.permissions import (
+    IsSecretary,
+    IsStudent,
+    IsTeacher
+)
 from api.apps.authentication.serializers.user import (
     CreateSecretarySerializer,
     CreateStudentSerializer,
@@ -28,6 +31,7 @@ from api.apps.authentication.serializers.user import (
     SecretarySerializer,
     StudentSerializer,
     TeacherSerializer,
+    UpdateUserSerializer,
     UserChangePasswordSerializer
 )
 from api.apps.authentication.signals import send_email_confirmation
@@ -59,6 +63,7 @@ class StudentRegisterViewSet(CreateUserViewSet):
 
 
 class SecretaryRegisterViewSet(CreateUserViewSet):
+    permission_classes = (IsAuthenticated,)
     serializer_class = CreateSecretarySerializer
     message = "Secretário criado com sucesso. Por favor, verifique seu email."
 
@@ -150,57 +155,41 @@ class UserResendConfirmView(APIView):
 
 class UserDetailView(APIView):
     permission_classes = (IsAuthenticated, IsSecretary | IsTeacher | IsStudent)
-    serializer_class = None
-    model = None
-
-    def get_serializer_class(self):
-        if self.request.user.is_student:
-            return StudentSerializer
-        elif self.request.user.is_teacher:
-            return TeacherSerializer
-        elif self.request.user.is_secretary:
-            return SecretarySerializer
-        else:
-            return None
-
-    def get_model(self):
-        if self.request.user.is_student:
-            return Student
-        elif self.request.user.is_teacher:
-            return Teacher
-        elif self.request.user.is_secretary:
-            return Secretary
-        else:
-            return None
+    serializer_class = UpdateUserSerializer
 
     def get_object(self):
-        try:
-            self.model = self.get_model()
-
-            return self.model.objects.get(user=self.request.user, is_active=True)
-
-        except self.model.DoesNotExist:
+        if not self.request.user.is_active:
             raise NotFound(
                 {
                     "detail": "Usuário não encontrado."
                 }
             )
 
-    def get(self, request, format=None):
-        self.serializer_class = self.get_serializer_class()
-        instance = self.get_object()
+        return self.request.user.child
 
-        serializer = self.serializer_class(instance)
+    def get_serializer_class(self):
+        if self.request.user.is_student:
+            return StudentSerializer
+
+        if self.request.user.is_teacher:
+            return TeacherSerializer
+
+        if self.request.user.is_secretary:
+            return SecretarySerializer
+
+        return self.serializer_class
+
+    def get(self, request, format=None):
+        instance = self.get_object()
+        serializer = self.get_serializer_class()(instance)
 
         return Response(serializer.data)
 
     def put(self, request, format=None, *args, **kwargs):
         partial = kwargs.pop('partial', False)
+        instance = self.get_object().user
 
-        self.serializer_class = self.get_serializer_class()
-        instance = self.get_object()
-
-        serializer = self.serializer_class(
+        serializer = UpdateUserSerializer(
             instance,
             data=request.data,
             partial=partial
@@ -220,4 +209,11 @@ class UserChangePasswordView(UpdateAPIView, UpdateModelMixin):
     serializer_class = UserChangePasswordSerializer
 
     def get_object(self):
+        if not self.request.user.is_active:
+            raise NotFound(
+                {
+                    "detail": "Usuário não encontrado."
+                }
+            )
+
         return self.request.user

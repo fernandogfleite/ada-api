@@ -40,11 +40,15 @@ class CreateStudentSerializer(serializers.Serializer):
         ]
     )
     password = serializers.CharField(write_only=True)
-    student_id = serializers.CharField(write_only=True)
+    registration_id = serializers.CharField(write_only=True)
 
-    def validate_student_id(self, value):
-        if Student.objects.filter(student_id=value).exists():
-            raise serializers.ValidationError("Student ID already exists.")
+    def validate_registration_id(self, value):
+        if Student.objects.filter(registration_id=value).exists():
+            raise serializers.ValidationError(
+                {
+                    "registration_id": "Número de matrícula já cadastrado."
+                }
+            )
 
         return value
 
@@ -53,13 +57,13 @@ class CreateStudentSerializer(serializers.Serializer):
             email=validated_data['email'],
             name=validated_data['name'],
             password=validated_data['password'],
-            student_id=validated_data['student_id']
+            registration_id=validated_data['registration_id']
         )
 
         return {
             "email": instance.user.email,
             "name": instance.user.name,
-            "student_id": instance.student_id,
+            "registration_id": instance.registration_id,
         }
 
 
@@ -75,27 +79,18 @@ class CreateTeacherSerializer(serializers.Serializer):
         ]
     )
     password = serializers.CharField(write_only=True)
-    teacher_id = serializers.CharField(write_only=True)
 
     def create(self, validated_data):
         instance = Teacher.objects.create_teacher(
             email=validated_data['email'],
             name=validated_data['name'],
-            password=validated_data['password'],
-            teacher_id=validated_data['teacher_id']
+            password=validated_data['password']
         )
 
         return {
             "email": instance.user.email,
-            "name": instance.user.name,
-            "teacher_id": instance.teacher_id,
+            "name": instance.user.name
         }
-
-    def validate_teacher_id(self, value):
-        if Teacher.objects.filter(teacher_id=value).exists():
-            raise serializers.ValidationError("Teacher ID already exists.")
-
-        return value
 
 
 class CreateSecretarySerializer(serializers.Serializer):
@@ -110,27 +105,18 @@ class CreateSecretarySerializer(serializers.Serializer):
         ]
     )
     password = serializers.CharField(write_only=True)
-    secretary_id = serializers.CharField(write_only=True)
 
     def create(self, validated_data):
         instance = Secretary.objects.create_secretary(
             email=validated_data['email'],
             name=validated_data['name'],
-            password=validated_data['password'],
-            secretary_id=validated_data['secretary_id']
+            password=validated_data['password']
         )
 
         return {
             "email": instance.user.email,
-            "name": instance.user.name,
-            "secretary_id": instance.secretary_id,
+            "name": instance.user.name
         }
-
-    def validate_secretary_id(self, value):
-        if Secretary.objects.filter(secretary_id=value).exists():
-            raise serializers.ValidationError("Secretary ID already exists.")
-
-        return value
 
 
 class StudentSerializer(serializers.ModelSerializer):
@@ -142,22 +128,8 @@ class StudentSerializer(serializers.ModelSerializer):
         fields = (
             'name',
             'email',
-            'student_id',
+            'registration_id'
         )
-
-    def update(self, instance, validated_data):
-        user = instance.user
-        user.name = validated_data.get('name', user.name)
-        user.email = validated_data.get('email', user.email)
-        user.save()
-
-        instance.student_id = validated_data.get(
-            'student_id',
-            instance.student_id
-        )
-        instance.save()
-
-        return instance
 
 
 class TeacherSerializer(serializers.ModelSerializer):
@@ -169,22 +141,7 @@ class TeacherSerializer(serializers.ModelSerializer):
         fields = (
             'name',
             'email',
-            'teacher_id',
         )
-
-    def update(self, instance, validated_data):
-        user = instance.user
-        user.name = validated_data.get('name', user.name)
-        user.email = validated_data.get('email', user.email)
-        user.save()
-
-        instance.teacher_id = validated_data.get(
-            'teacher_id',
-            instance.teacher_id
-        )
-        instance.save()
-
-        return instance
 
 
 class SecretarySerializer(serializers.ModelSerializer):
@@ -196,22 +153,71 @@ class SecretarySerializer(serializers.ModelSerializer):
         fields = (
             'name',
             'email',
-            'secretary_id'
         )
+
+
+class UpdateUserSerializer(serializers.ModelSerializer):
+    name = serializers.CharField()
+    email = serializers.EmailField()
+    registration_id = serializers.CharField(required=False, write_only=True)
+
+    class Meta:
+        model = User
+        fields = (
+            "name",
+            "email",
+            "registration_id"
+        )
+
+    def validate_email(self, value):
+        if self.instance.email != value and User.objects.filter(email=value).exists():
+            raise serializers.ValidationError(
+                {
+                    "email": "Email já cadastrado."
+                }
+            )
+
+        return value
+
+    def validate_registration_id(self, value):
+        if self.instance.is_student and Student.objects.filter(
+            registration_id=value
+        ).exclude(user=self.instance).exists():
+            raise serializers.ValidationError(
+                {
+                    "registration_id": "Número de matrícula já cadastrado."
+                }
+            )
+
+        return value
 
     def update(self, instance, validated_data):
-        user = instance.user
-        user.name = validated_data.get('name', user.name)
-        user.email = validated_data.get('email', user.email)
-        user.save()
+        instance.name = validated_data.get('name', instance.name)
+        instance.email = validated_data.get('email', instance.email)
 
-        instance.secretary_id = validated_data.get(
-            'secretary_id',
-            instance.secretary_id
-        )
         instance.save()
 
+        if instance.is_student:
+            student = instance.student
+            student.registration_id = validated_data.get(
+                'registration_id',
+                student.registration_id
+            )
+            student.save()
+
         return instance
+
+    def to_representation(self, instance):
+        if instance.is_student:
+            return StudentSerializer(instance.student).data
+
+        if instance.is_teacher:
+            return TeacherSerializer(instance.teacher).data
+
+        if instance.is_secretary:
+            return SecretarySerializer(instance.secretary).data
+
+        return super().to_representation(instance)
 
 
 class UserChangePasswordSerializer(serializers.ModelSerializer):
