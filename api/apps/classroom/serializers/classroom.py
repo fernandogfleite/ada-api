@@ -152,6 +152,9 @@ class SubjectPeriodSerializer(serializers.ModelSerializer):
         model = SubjectPeriod
         fields = '__all__'
         read_only_fields = ['id', 'created_at', 'updated_at']
+        extra_kwargs = {
+            'days_of_week': {'write_only': True}
+        }
 
     def validate(self, attrs):
         attrs = super().validate(attrs)
