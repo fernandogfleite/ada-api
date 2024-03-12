@@ -199,7 +199,7 @@ class SubjectPeriodSerializer(serializers.ModelSerializer):
         subject_period = SubjectPeriod.objects.create(**validated_data)
 
         for day_of_week in days_of_week:
-            SubjectPeriod.objects.create_subject_period_weekday(
+            SubjectPeriodWeekday.objects.create_subject_weekday(
                 subject_period,
                 day_of_week['weekday'],
                 day_of_week['start_time'],
