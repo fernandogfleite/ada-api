@@ -28,7 +28,7 @@ def send_email_confirmation(sender, instance, created, **kwargs):
 @receiver(reset_password_token_created)
 def password_reset_token_created(sender, instance, reset_password_token, *args, **kwargs):
     data = {
-        "name": reset_password_token.user.first_name,
+        "name": reset_password_token.user.name,
         "link": config('RESET_PASSWORD_URL') + f"?token={reset_password_token.key}",
     }
 
