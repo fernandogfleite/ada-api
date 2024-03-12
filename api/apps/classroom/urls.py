@@ -30,7 +30,11 @@ router.register('user-subject-periods', ListLoggedUserSubjectPeriods)
 urlpatterns = [
     path(
         'subject-period-students/<int:subject_period_id>/students/',
-        ListStudentInSubjectPeriod.as_view(),
+        ListStudentInSubjectPeriod.as_view(
+            {
+                'get': 'list'
+            }
+        ),
         name='list-student-in-subject-period'
     ),
     path('', include(router.urls)),
