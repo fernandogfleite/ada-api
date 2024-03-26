@@ -16,6 +16,7 @@ from rest_framework.generics import UpdateAPIView
 from rest_framework.mixins import UpdateModelMixin
 
 from api.apps.authentication.models.user import (
+    Teacher,
     User,
     UserConfirmation
 )
@@ -223,10 +224,7 @@ class ListTeachersView(APIView):
     serializer_class = TeacherSerializer
 
     def get(self, request, format=None):
-        teachers = User.objects.filter(
-            is_teacher=True,
-            is_active=True
-        )
+        teachers = Teacher.objects.filter(user__is_active=True)
 
         serializer = self.serializer_class(teachers, many=True)
 
