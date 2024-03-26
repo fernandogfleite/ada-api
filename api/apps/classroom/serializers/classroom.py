@@ -69,7 +69,7 @@ class PeriodSerializer(serializers.ModelSerializer):
 
 class RoomSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Period
+        model = Room
         fields = '__all__'
         read_only_fields = ['id', 'created_at', 'updated_at']
 
