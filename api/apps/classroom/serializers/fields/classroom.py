@@ -16,9 +16,10 @@ class PeriodField(ModifiedRelatedField):
     def to_representation(self, value):
         return {
             'id': value.id,
-            'name': value.name,
-            'start_time': value.start_time,
-            'end_time': value.end_time
+            'year': value.year,
+            'semester': value.semester,
+            'start_date': value.start_date,
+            'end_date': value.end_date
         }
 
     def to_internal_value(self, data):

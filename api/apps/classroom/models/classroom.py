@@ -104,6 +104,10 @@ class SubjectPeriod(Base):
     def __str__(self):
         return f'{self.subject.name} - {self.period.year} - {self.period.semester}'
 
+    @property
+    def days_of_week(self):
+        return SubjectPeriodWeekday.objects.filter(subject_period=self)
+
     class Meta:
         db_table = 'subjects_periods'
         verbose_name = 'subject period'

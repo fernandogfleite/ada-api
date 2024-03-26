@@ -11,14 +11,14 @@ class TeacherField(ModifiedRelatedField):
 
     def to_representation(self, value):
         return {
-            'id': value.id,
-            'name': value.name
+            'id': value.user.id,
+            'name': value.user.name,
         }
 
     def to_internal_value(self, data):
         try:
             return Teacher.objects.get(
-                id=data,
+                user_id=data,
                 user__is_active=True,
                 user__is_confirmed=True
             )
