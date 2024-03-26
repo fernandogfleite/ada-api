@@ -17,7 +17,7 @@ def send_email_confirmation(sender, instance, created, **kwargs):
             "link": config('CONFIRM_EMAIL_URL') + f"?identification_code={instance.token}",
         }
 
-        task_send_email.delay(
+        task_send_email(
             subject="Confirmação de email",
             to=instance.user.email,
             template="authentication/email_confirmation.html",
@@ -32,7 +32,7 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
         "link": config('RESET_PASSWORD_URL') + f"?token={reset_password_token.key}",
     }
 
-    task_send_email.delay(
+    task_send_email(
         subject="Recuperação de senha",
         to=reset_password_token.user.email,
         template="authentication/reset_password.html",
