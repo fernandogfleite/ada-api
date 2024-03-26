@@ -70,4 +70,9 @@ urlpatterns = [
         user.SecretaryRegisterViewSet.as_view({'post': 'create'}),
         name='register_secretary'
     ),
+    path(
+        'teachers/',
+        user.ListTeachersView.as_view(),
+        name='list_teachers'
+    ),
 ]

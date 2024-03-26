@@ -216,3 +216,18 @@ class UserChangePasswordView(UpdateAPIView, UpdateModelMixin):
             )
 
         return self.request.user
+
+
+class ListTeachersView(APIView):
+    permission_classes = (IsAuthenticated, IsSecretary)
+    serializer_class = TeacherSerializer
+
+    def get(self, request, format=None):
+        teachers = User.objects.filter(
+            is_teacher=True,
+            is_active=True
+        )
+
+        serializer = self.serializer_class(teachers, many=True)
+
+        return Response(serializer.data)
