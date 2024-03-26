@@ -26,17 +26,11 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = config(
-    'ALLOWED_HOSTS',
-    cast=lambda v: [s.strip() for s in v.split(',')]
-)
+ALLOWED_HOSTS = ['*']
 
 X_FRAME_OPTIONS = 'SAMEORIGIN'
 
-CORS_ALLOWED_ORIGINS = config(
-    'ALLOWED_HOSTS_CORS',
-    cast=lambda v: [s.strip() for s in v.split(', ')]
-)
+CORS_ALLOW_ALL_ORIGINS = True
 
 CORS_ALLOW_HEADERS = (
     'content-disposition',
