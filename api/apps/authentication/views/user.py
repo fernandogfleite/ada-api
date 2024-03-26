@@ -63,7 +63,6 @@ class StudentRegisterViewSet(CreateUserViewSet):
 
 
 class SecretaryRegisterViewSet(CreateUserViewSet):
-    permission_classes = (IsAuthenticated,)
     serializer_class = CreateSecretarySerializer
     message = "Secretário criado com sucesso. Por favor, verifique seu email."
 
