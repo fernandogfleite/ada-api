@@ -117,7 +117,8 @@ class SubjectPeriodWeekdayField(ModifiedRelatedField):
                 },
                 'period': {
                     'id': value.subject_period.period.id,
-                    'name': value.subject_period.period.name,
+                    'year': value.subject_period.period.year,
+                    'semester': value.subject_period.period.semester,
                 }
             },
             'weekday': {
