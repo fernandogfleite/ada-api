@@ -133,6 +133,7 @@ class StudentSerializer(serializers.ModelSerializer):
 
 
 class TeacherSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(source='user.id')
     name = serializers.CharField(source='user.name')
     email = serializers.EmailField(source='user.email')
 
