@@ -294,8 +294,8 @@ class ClassroomSerializer(serializers.ModelSerializer):
                 )
 
             if Classroom.objects.filter(
-                subject_period=attrs.get(
-                    'subject_period', self.instance.subject_period),
+                subject_period_weekday=attrs.get(
+                    'subject_period_weekday', self.instance.subject_period_weekday),
                 date=attrs.get('date', self.instance.date),
                 start_time=attrs.get('start_time', self.instance.start_time),
                 end_time=attrs.get('end_time', self.instance.end_time)
@@ -310,7 +310,7 @@ class ClassroomSerializer(serializers.ModelSerializer):
 
         else:
             if Classroom.objects.filter(
-                subject_period=attrs['subject_period'],
+                subject_period_weekday=attrs['subject_period_weekday'],
                 date=attrs['date'],
                 start_time=attrs['start_time'],
                 end_time=attrs['end_time']
