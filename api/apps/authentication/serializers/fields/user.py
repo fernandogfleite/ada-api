@@ -3,6 +3,7 @@ from api.apps.authentication.models.user import (
     Student
 )
 from api.apps.utils.fields import ModifiedRelatedField
+from rest_framework.exceptions import ValidationError
 
 
 class TeacherField(ModifiedRelatedField):
@@ -24,7 +25,11 @@ class TeacherField(ModifiedRelatedField):
             )
 
         except Teacher.DoesNotExist:
-            self.fail('does_not_exist', pk_value=data)
+            raise ValidationError(
+                detail={
+                    "detail": "Professor não encontrado."
+                }
+            )
 
 
 class StudentField(ModifiedRelatedField):
@@ -33,18 +38,23 @@ class StudentField(ModifiedRelatedField):
 
     def to_representation(self, value):
         return {
-            'id': value.id,
-            'name': value.name,
+            'id': value.user.id,
+            'name': value.user.name,
             'registration_id': value.registration_id,
         }
 
     def to_internal_value(self, data):
+        print(data)
         try:
             return Student.objects.get(
-                id=data,
+                user_id=data,
                 user__is_active=True,
                 user__is_confirmed=True
             )
 
         except Student.DoesNotExist:
-            self.fail('does_not_exist', pk_value=data)
+            raise ValidationError(
+                detail={
+                    "detail": "Aluno não encontrado."
+                }
+            )

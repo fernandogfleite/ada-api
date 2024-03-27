@@ -8,6 +8,8 @@ from api.apps.classroom.models.classroom import (
 
 from api.apps.utils.fields import ModifiedRelatedField
 
+from rest_framework.exceptions import ValidationError
+
 
 class PeriodField(ModifiedRelatedField):
     def get_queryset(self):
@@ -29,7 +31,11 @@ class PeriodField(ModifiedRelatedField):
             )
 
         except Period.DoesNotExist:
-            self.fail('does_not_exist', pk_value=data)
+            raise ValidationError(
+                detail={
+                    "detail": "Período não encontrado."
+                }
+            )
 
 
 class SubjectField(ModifiedRelatedField):
@@ -50,7 +56,11 @@ class SubjectField(ModifiedRelatedField):
             )
 
         except Subject.DoesNotExist:
-            self.fail('does_not_exist', pk_value=data)
+            raise ValidationError(
+                detail={
+                    "detail": "Disciplina não encontrada."
+                }
+            )
 
 
 class RoomField(ModifiedRelatedField):
@@ -70,7 +80,11 @@ class RoomField(ModifiedRelatedField):
             )
 
         except Room.DoesNotExist:
-            self.fail('does_not_exist', pk_value=data)
+            raise ValidationError(
+                detail={
+                    "detail": "Sala não encontrada."
+                }
+            )
 
 
 class SubjectPeriodField(ModifiedRelatedField):
@@ -87,7 +101,8 @@ class SubjectPeriodField(ModifiedRelatedField):
             },
             'period': {
                 'id': value.period.id,
-                'name': value.period.name,
+                'year': value.period.year,
+                'semester': value.period.semester,
             }
         }
 
@@ -98,7 +113,11 @@ class SubjectPeriodField(ModifiedRelatedField):
             )
 
         except SubjectPeriod.DoesNotExist:
-            self.fail('does_not_exist', pk_value=data)
+            raise ValidationError(
+                detail={
+                    "detail": "Período da disciplina não encontrado."
+                }
+            )
 
 
 class SubjectPeriodWeekdayField(ModifiedRelatedField):
@@ -136,4 +155,8 @@ class SubjectPeriodWeekdayField(ModifiedRelatedField):
             )
 
         except SubjectPeriodWeekday.DoesNotExist:
-            self.fail('does_not_exist', pk_value=data)
+            raise ValidationError(
+                detail={
+                    "detail": "Dia da semana da disciplina não encontrado."
+                }
+            )

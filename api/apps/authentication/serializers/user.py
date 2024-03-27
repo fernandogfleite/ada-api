@@ -120,6 +120,7 @@ class CreateSecretarySerializer(serializers.Serializer):
 
 
 class StudentSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(source='user.id')
     name = serializers.CharField(source='user.name')
     email = serializers.EmailField(source='user.email')
     role = serializers.CharField(source='user.role')
@@ -127,6 +128,7 @@ class StudentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Student
         fields = (
+            'id',
             'name',
             'email',
             'registration_id',
@@ -151,6 +153,7 @@ class TeacherSerializer(serializers.ModelSerializer):
 
 
 class SecretarySerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(source='user.id')
     name = serializers.CharField(source='user.name')
     email = serializers.EmailField(source='user.email')
     role = serializers.CharField(source='user.role')
@@ -158,6 +161,7 @@ class SecretarySerializer(serializers.ModelSerializer):
     class Meta:
         model = Secretary
         fields = (
+            'id',
             'name',
             'email',
             'role'

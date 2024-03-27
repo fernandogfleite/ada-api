@@ -216,7 +216,7 @@ class ListLoggedUserClassrooms(ListModelMixin,
 
         elif self.request.user.is_student:
             query &= Q(
-                subject_period_id__in=SubjectPeriodStudent.objects.filter(
+                subject_period_weekday__subject_period_id__in=SubjectPeriodStudent.objects.filter(
                     student__user_id=self.request.user.id
                 ).values('subject_period_id')
             )
