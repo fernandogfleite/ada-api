@@ -105,7 +105,11 @@ class SubjectPeriodField(ModifiedRelatedField):
                 'id': value.period.id,
                 'year': value.period.year,
                 'semester': value.period.semester,
-            }
+            },
+            'teacher': {
+                'id': value.teacher.user.id,
+                'name': value.teacher.user.name,
+            },
         }
 
     def to_internal_value(self, data):
@@ -141,7 +145,11 @@ class SubjectPeriodWeekdayField(ModifiedRelatedField):
                     'id': value.subject_period.period.id,
                     'year': value.subject_period.period.year,
                     'semester': value.subject_period.period.semester,
-                }
+                },
+                'teacher': {
+                    'id': value.subject_period.teacher.user.id,
+                    'name': value.subject_period.teacher.user.name,
+                },
             },
             'weekday': {
                 'value': value.weekday,
