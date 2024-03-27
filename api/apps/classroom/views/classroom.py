@@ -99,7 +99,18 @@ class SubjectPeriodViewSet(SecretaryMixin,
             if period_id:
                 query &= Q(period_id=period_id)
 
-        return queryset.filter(query).order_by('id')
+            if self.request.user.is_student:
+                queryset = queryset.exclude(
+                    id__in=SubjectPeriodStudent.objects.filter(
+                        student__user_id=self.request.user.id
+                    ).values('subject_period_id')
+                )
+
+        return queryset.filter(query).order_by(
+            'subject__name',
+            'period__year',
+            'period__semester'
+        )
 
 
 class SubjectPeriodStudentViewSet(CreateModelMixin,
