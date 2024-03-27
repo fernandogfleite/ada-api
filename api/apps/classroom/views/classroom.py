@@ -32,6 +32,8 @@ from rest_framework.mixins import (
 )
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError
+from rest_framework.response import Response
+from rest_framework import status
 
 from django.db.models import Q
 
@@ -121,13 +123,26 @@ class SubjectPeriodStudentViewSet(CreateModelMixin,
             student_id = self.request.query_params.get('student_id')
             subject_period_id = self.kwargs.get('subject_period_id')
 
-            if student_id:
-                query &= Q(student_id=student_id)
+            if not self.request.user.is_student:
+                if student_id:
+                    query &= Q(student_id=student_id)
 
             if subject_period_id:
                 query &= Q(subject_period_id=subject_period_id)
 
         return queryset.filter(query).order_by('id')
+
+    def create(self, request, *args, **kwargs):
+        data = dict(**request.data)
+        if request.user.is_student:
+            data['student'] = request.user.id
+
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 class ClassroomViewSet(ModelViewSet):
