@@ -183,7 +183,6 @@ class ListLoggedUserClassrooms(ListModelMixin,
     queryset = Classroom.objects.all()
     serializer_class = ClassroomSerializer
     permission_classes = (IsAuthenticated, IsTeacher | IsStudent | IsSecretary)
-    pagination_class = None
 
     def get_queryset(self):
         queryset = super().get_queryset()
