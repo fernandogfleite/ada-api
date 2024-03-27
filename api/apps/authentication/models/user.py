@@ -143,6 +143,19 @@ class User(Base, AbstractBaseUser, PermissionsMixin):
 
         return None
 
+    @property
+    def role(self):
+        if self.is_student:
+            return 'student'
+
+        if self.is_teacher:
+            return 'teacher'
+
+        if self.is_secretary:
+            return 'secretary'
+
+        return None
+
 
 class Student(Base):
     user = models.OneToOneField(
