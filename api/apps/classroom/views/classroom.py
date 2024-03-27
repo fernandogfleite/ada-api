@@ -212,7 +212,8 @@ class ListLoggedUserClassrooms(ListModelMixin,
             )
 
         if self.request.user.is_teacher:
-            query &= Q(teacher_id=self.request.user.id)
+            query &= Q(
+                subject_period_weekday__subject_period__teacher__user_id=self.request.user.id)
 
         elif self.request.user.is_student:
             query &= Q(
