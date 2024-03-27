@@ -132,7 +132,8 @@ class SubjectPeriodWeekdayField(ModifiedRelatedField):
                 'subject': {
                     'id': value.subject_period.subject.id,
                     'name': value.subject_period.subject.name,
-                    'code': value.subject_period.subject.code
+                    'code': value.subject_period.subject.code,
+                    'description': value.subject_period.subject.description
                 },
                 'period': {
                     'id': value.subject_period.period.id,
