@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+from datetime import timedelta
 import os
 from decouple import config
 
@@ -192,8 +193,8 @@ REST_FRAMEWORK = {
 SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
-    'ACCESS_TOKEN_LIFETIME': 24*60*60,
-    'REFRESH_TOKEN_LIFETIME': 7*24*60*60,
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=24*60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
 }
 
 AUTH_USER_MODEL = 'authentication.User'
