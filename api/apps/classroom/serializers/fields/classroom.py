@@ -98,7 +98,8 @@ class SubjectPeriodField(ModifiedRelatedField):
             'subject': {
                 'id': value.subject.id,
                 'name': value.subject.name,
-                'code': value.subject.code
+                'code': value.subject.code,
+                'description': value.subject.description,
             },
             'period': {
                 'id': value.period.id,
