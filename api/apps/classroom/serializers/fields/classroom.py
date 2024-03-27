@@ -46,7 +46,8 @@ class SubjectField(ModifiedRelatedField):
         return {
             'id': value.id,
             'name': value.name,
-            'code': value.code
+            'code': value.code,
+            'description': value.description,
         }
 
     def to_internal_value(self, data):
